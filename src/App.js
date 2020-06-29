@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import { CreatePost } from './components/post';
 
 
 class App extends React.Component {
@@ -11,19 +12,19 @@ class App extends React.Component {
     }
   }
 
-  handleClickBoast = (event) => {
+  getAllBoast = (event) => {
     fetch('http://localhost:8000/api/post/boast/')
       .then(res => res.json())
       .then(res => this.setState({ post: res }))
   }
 
-  handleClickRoast = (event) => {
+  getAllRoast = (event) => {
     fetch('http://localhost:8000/api/post/roast/')
       .then(res => res.json())
       .then(res => this.setState({ post: res }))
   }
 
-  handleHighestVote = (event) => {
+  sortByVote = (event) => {
     fetch('http://localhost:8000/api/post/sorted_posts/')
       .then(res => res.json())
       .then(res => this.setState({ post: res }))
@@ -35,10 +36,31 @@ class App extends React.Component {
       .then(res => this.setState({ post: res }))
   }
 
-  handleUpVote() {
-    fetch('http://localhost:8000/api/post')
+  handleUpVote = (id) => {
+    const requestOptions = {
+      method: 'POST'
+    };
+    fetch(`http://localhost:8000/api/post/${id}/up_vote/`, requestOptions)
       .then(res => res.json())
-      .then(res => this.setState({ post: res }))
+      .then(res => this.getAllPosts())
+  }
+
+  handleDownVote = (id) => {
+    const requestOptions = {
+      method: 'POST'
+    };
+    fetch(`http://localhost:8000/api/post/${id}/down_vote/`, requestOptions)
+      .then(res => res.json())
+      .then(res => this.getAllPosts())
+  }
+
+  handleDeletePost = (id) => {
+    const requestOptions = {
+      method: 'POST'
+    };
+    fetch(`http://localhost:8000/api/post/${id}/delete_post/`, requestOptions)
+      .then(res => res.json())
+      .then(res => this.getAllPosts())
   }
 
   componentDidMount() {
@@ -49,29 +71,36 @@ class App extends React.Component {
     return (
       <div className="App">
         <h3>Ghost posts</h3>
-        <button onClick={this.getAllPosts}>All Post</button>
-        <button onClick={this.handleClickBoast}>Boasts</button>
-        <button onClick={this.handleClickRoast}>Roasts</button>
-        <button onClick={this.handleHighestVote}>By Votes</button>
+        <div className="w-400">
+          <button onClick={this.getAllPosts}>All Post</button>
+          <button onClick={this.getAllBoast}>Boasts</button>
+          <button onClick={this.getAllRoast}>Roasts</button>
+          <button onClick={this.sortByVote}>By Votes</button>
 
-        {this.state.post.map((item) => {
-          return (
-            <ul>
-              <li>
-                Type: {(item.is_boast ?
-                  (<span>Boast</span>)
-                  : (<span>Roast</span>)
-                )}<br />
+
+          {this.state.post.map((item) => {
+            return (
+              <ul>
+                <li>
+                  Type: {(item.is_boast ?
+                    (<span>Boast</span>)
+                    : (<span>Roast</span>)
+                  )}<br />
                 Content: {item.content}<br />
                 Total Vote: {item.total_votes} <br />
                 Date: {item.submit_time}<br />
-                <button>UpVote {item.up_votes}</button>
-                <button>DownVote {item.down_votes}</button>
-              </li>
-            </ul>
-          )
-        }
-        )}
+                  <button onClick={() => this.handleUpVote(item.id)}>UpVote {item.up_votes}</button>
+                  <button onClick={() => this.handleDownVote(item.id)}>DownVote {item.down_votes}</button>
+                  <button onClick={() => this.handleDeletePost(item.secret_key)}>Delete Post</button>
+                </li>
+              </ul>
+            )
+          }
+          )}
+        </div>
+        <div className="w-400 ml-50">
+          <CreatePost />
+        </div>
       </div>
     );
   }
